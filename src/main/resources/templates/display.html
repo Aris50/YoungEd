@@ -6,4 +6,122 @@
     <style>
         body {
             margin: 0;
-            background: #
+            background: #090909;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            perspective: 1000px;
+            /*font-family: sans-serif;*/
+        }
+
+        .scene {
+            width: 200px;
+            height: 200px;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: spin 8s infinite linear;
+        }
+        .face {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            border: 4px solid white;
+        }
+
+        .front  { background: #ff4c4c;    animation: colorCyclefront 2s infinite linear; transform: translateZ(100px); }
+        .back   { background: #4cffb0;     animation: colorCycleback 2s infinite linear; transform: rotateY(180deg) translateZ(100px); }
+        .right  { background: #4ca1ff;    animation: colorCycleright 2s infinite linear;  transform: rotateY(90deg) translateZ(100px); }
+        .left   { background: #ffd24c;   animation: colorCycleleft 2s infinite linear; transform: rotateY(-90deg) translateZ(100px); }
+        .top    { background: #b84cff;   animation: colorCycletop 2s infinite linear;   transform: rotateX(90deg) translateZ(100px); }
+        .bottom { background: #4cfff8;  animation: colorCyclebottom 2s infinite linear;   transform: rotateX(-90deg) translateZ(100px); }
+        @keyframes spin {
+            10% {
+                transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+            }
+            100% {
+                transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg);
+                .face{border: #000000};
+            }
+        }
+
+        @keyframes colorCyclefront {
+            0% {
+                background-color: red;
+                border-color: #426052;
+            }
+            50% {
+                background-color: blue;
+                border-color: white;
+            }
+        }
+        @keyframes colorCycleback {
+            0% {
+                background-color: red;
+                border-color: #426052;
+            }
+            50% {
+                background-color: rgba(0, 255, 225, 0.7);
+                border-color: white;
+            }
+        }
+        @keyframes colorCycleright {
+            0% {
+                background-color: #bf0396;
+                border-color: #426052;
+            }
+            50% {
+                background-color: #ffec20;
+                border-color: white;
+            }
+        }
+        @keyframes colorCycleleft {
+            0% {
+                background-color: #426052;
+                border-color: #426052;
+            }
+            50% {
+                background-color: #2fff00;
+                border-color: white;
+            }
+        }
+        @keyframes colorCycletop {
+            0% {
+                background-color: #216c9e;
+                border-color: #426052;
+            }
+            50% {
+                background-color: #00fff7;
+                border-color: white;
+            }
+        }
+        @keyframes colorCyclebottom {
+            0% {
+                background-color: #c579e3;
+                border-color: #426052;
+            }
+            50% {
+                background-color: #9a4f4f;
+                border-color: white;
+            }
+        }
+    </style>
+</head>
+<body>
+<div> Vali Spinner </div>
+<div class="scene">
+    <div class="face front">Welcome</div>
+    <div class="face back">Good Day Sir</div>
+    <div class="face right">Hello</div>
+    <div class="face left">Wazzup</div>
+    <div class="face top">Ayyyy</div>
+    <div class="face bottom">!!!</div>
+</div>
+</body>
+</html>
