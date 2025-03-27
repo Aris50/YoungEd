@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, memo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Line, Bar, Pie } from 'react-chartjs-2';
 import {
@@ -27,6 +27,55 @@ ChartJS.register(
     Tooltip,
     Legend
 );
+
+// Memoized Chart Components
+const MemoizedPieChart = memo(({ data, title }) => (
+    <div style={{
+        backgroundColor: 'white',
+        padding: '1rem',
+        borderRadius: '10px',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+    }}>
+        <h3 style={{ marginBottom: '1rem', textAlign: 'center' }}>{title}</h3>
+        {data && (
+            <Pie
+                data={data}
+                options={{
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }}
+            />
+        )}
+    </div>
+));
+
+const MemoizedBarChart = memo(({ data, title }) => (
+    <div style={{
+        backgroundColor: 'white',
+        padding: '1rem',
+        borderRadius: '10px',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+    }}>
+        <h3 style={{ marginBottom: '1rem', textAlign: 'center' }}>{title}</h3>
+        {data && (
+            <Bar
+                data={data}
+                options={{
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }}
+            />
+        )}
+    </div>
+));
 
 export const filterStudents = (students, searchTerm, filterCriteria) => {
     let filtered = [...students];
@@ -79,12 +128,9 @@ export const sortStudents = (students, sortField = 'name', sortDirection = 'asc'
 export default function Welcome() {
     const [visible, setVisible] = useState(false);
     const [students, setStudents] = useState([]);
-    const [filteredStudents, setFilteredStudents] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortField, setSortField] = useState('name');
     const [sortDirection, setSortDirection] = useState('asc');
-    const [editingStudent, setEditingStudent] = useState(null);
-    const [errors, setErrors] = useState({});
     const [showSortOptions, setShowSortOptions] = useState(false);
     const [showFilterOptions, setShowFilterOptions] = useState(false);
     const [filterCriteria, setFilterCriteria] = useState({
@@ -92,16 +138,21 @@ export default function Welcome() {
         grade: '',
         subject: ''
     });
-    const [selectedStudent, setSelectedStudent] = useState(null);
+    const [editingStudent, setEditingStudent] = useState(null);
+    const [newStudent, setNewStudent] = useState({
+        name: '',
+        age: '',
+        email: '',
+        grade: '',
+        subject: '',
+        photo: ''
+    });
+    const [errors, setErrors] = useState({});
     const [showInfoModal, setShowInfoModal] = useState(false);
-    const router = useRouter();
+    const [selectedStudent, setSelectedStudent] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [studentsPerPage] = useState(5);
-    const [chartData, setChartData] = useState({
-        ageDistribution: null,
-        gradeDistribution: null,
-        subjectDistribution: null
-    });
+    const router = useRouter();
 
     const subjects = [
         'Mathematics', 'Science', 'English', 'History', 'Geography',
@@ -294,7 +345,6 @@ export default function Welcome() {
             }
         ];
         setStudents(initialStudents);
-        setFilteredStudents(initialStudents);
     }, []);
 
     const validateStudent = (student) => {
@@ -324,11 +374,6 @@ export default function Welcome() {
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
-
-    useEffect(() => {
-        const filtered = filterStudents(students, searchTerm, filterCriteria);
-        setFilteredStudents(filtered);
-    }, [searchTerm, filterCriteria, students]);
 
     const handleSearch = (e) => {
         setSearchTerm(e.target.value);
@@ -377,7 +422,6 @@ export default function Welcome() {
             photo: `https://example.com/default-photo.png`
         };
         setStudents([...students, newStudent]);
-        setFilteredStudents([...filteredStudents, newStudent]);
         setEditingStudent(newStudent);
         setErrors({});
     };
@@ -393,7 +437,6 @@ export default function Welcome() {
                 student.id === editingStudent.id ? editingStudent : student
             );
             setStudents(updatedStudents);
-            setFilteredStudents(updatedStudents);
             setEditingStudent(null);
             setErrors({});
         }
@@ -401,7 +444,6 @@ export default function Welcome() {
 
     const handleDelete = (id) => {
         setStudents(students.filter(student => student.id !== id));
-        setFilteredStudents(filteredStudents.filter(student => student.id !== id));
         if (editingStudent && editingStudent.id === id) {
             setEditingStudent(null);
         }
@@ -412,80 +454,90 @@ export default function Welcome() {
         setShowInfoModal(true);
     };
 
-    const sortedStudents = sortStudents(filteredStudents, sortField, sortDirection);
+    // Memoize filtered and sorted students
+    const filteredStudents = useMemo(() => {
+        return filterStudents(students, searchTerm, filterCriteria);
+    }, [students, searchTerm, filterCriteria]);
+
+    const sortedStudents = useMemo(() => {
+        return sortStudents(filteredStudents, sortField, sortDirection);
+    }, [filteredStudents, sortField, sortDirection]);
 
     // Calculate statistics
-    const ages = sortedStudents.map(student => student.age);
-    const minAge = Math.min(...ages);
-    const maxAge = Math.max(...ages);
-    const avgAge = Math.round(ages.reduce((a, b) => a + b, 0) / ages.length);
+    const statistics = useMemo(() => {
+        const ages = sortedStudents.map(student => student.age);
+        return {
+            minAge: Math.min(...ages),
+            maxAge: Math.max(...ages),
+            avgAge: Math.round(ages.reduce((a, b) => a + b, 0) / ages.length)
+        };
+    }, [sortedStudents]);
+
+    // Memoize chart data calculations
+    const chartData = useMemo(() => {
+        // Age Distribution Chart
+        const ageGroups = {
+            '11-13': 0,
+            '14-15': 0,
+            '16-18': 0
+        };
+        sortedStudents.forEach(student => {
+            if (student.age <= 13) ageGroups['11-13']++;
+            else if (student.age <= 15) ageGroups['14-15']++;
+            else ageGroups['16-18']++;
+        });
+
+        // Grade Distribution Chart
+        const gradeCounts = {};
+        sortedStudents.forEach(student => {
+            gradeCounts[student.grade] = (gradeCounts[student.grade] || 0) + 1;
+        });
+
+        // Subject Distribution Chart
+        const subjectCounts = {};
+        sortedStudents.forEach(student => {
+            subjectCounts[student.subject] = (subjectCounts[student.subject] || 0) + 1;
+        });
+
+        return {
+            ageDistribution: {
+                labels: Object.keys(ageGroups),
+                datasets: [{
+                    label: 'Age Distribution',
+                    data: Object.values(ageGroups),
+                    backgroundColor: ['#4CAF50', '#2196F3', '#FFC107']
+                }]
+            },
+            gradeDistribution: {
+                labels: Object.keys(gradeCounts),
+                datasets: [{
+                    label: 'Students per Grade',
+                    data: Object.values(gradeCounts),
+                    backgroundColor: '#2196F3'
+                }]
+            },
+            subjectDistribution: {
+                labels: Object.keys(subjectCounts),
+                datasets: [{
+                    label: 'Students per Subject',
+                    data: Object.values(subjectCounts),
+                    backgroundColor: [
+                        '#4CAF50', '#2196F3', '#FFC107', '#9C27B0', '#FF5722',
+                        '#795548', '#607D8B', '#E91E63', '#00BCD4', '#FF9800'
+                    ]
+                }]
+            }
+        };
+    }, [sortedStudents]);
 
     // Calculate pagination
-    const indexOfLastStudent = currentPage * studentsPerPage;
-    const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
-    const currentStudents = sortedStudents.slice(indexOfFirstStudent, indexOfLastStudent);
-    const totalPages = Math.ceil(sortedStudents.length / studentsPerPage);
-
-    // Update chart data
-    useEffect(() => {
-        const updateChartData = () => {
-            // Age Distribution Chart
-            const ageGroups = {
-                '11-13': 0,
-                '14-15': 0,
-                '16-18': 0
-            };
-            sortedStudents.forEach(student => {
-                if (student.age <= 13) ageGroups['11-13']++;
-                else if (student.age <= 15) ageGroups['14-15']++;
-                else ageGroups['16-18']++;
-            });
-
-            // Grade Distribution Chart
-            const gradeCounts = {};
-            sortedStudents.forEach(student => {
-                gradeCounts[student.grade] = (gradeCounts[student.grade] || 0) + 1;
-            });
-
-            // Subject Distribution Chart
-            const subjectCounts = {};
-            sortedStudents.forEach(student => {
-                subjectCounts[student.subject] = (subjectCounts[student.subject] || 0) + 1;
-            });
-
-            setChartData({
-                ageDistribution: {
-                    labels: Object.keys(ageGroups),
-                    datasets: [{
-                        label: 'Age Distribution',
-                        data: Object.values(ageGroups),
-                        backgroundColor: ['#4CAF50', '#2196F3', '#FFC107']
-                    }]
-                },
-                gradeDistribution: {
-                    labels: Object.keys(gradeCounts),
-                    datasets: [{
-                        label: 'Students per Grade',
-                        data: Object.values(gradeCounts),
-                        backgroundColor: '#2196F3'
-                    }]
-                },
-                subjectDistribution: {
-                    labels: Object.keys(subjectCounts),
-                    datasets: [{
-                        label: 'Students per Subject',
-                        data: Object.values(subjectCounts),
-                        backgroundColor: [
-                            '#4CAF50', '#2196F3', '#FFC107', '#9C27B0', '#FF5722',
-                            '#795548', '#607D8B', '#E91E63', '#00BCD4', '#FF9800'
-                        ]
-                    }]
-                }
-            });
-        };
-
-        updateChartData();
-    }, [sortedStudents]);
+    const paginationData = useMemo(() => {
+        const indexOfLastStudent = currentPage * studentsPerPage;
+        const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
+        const currentStudents = sortedStudents.slice(indexOfFirstStudent, indexOfLastStudent);
+        const totalPages = Math.ceil(sortedStudents.length / studentsPerPage);
+        return { currentStudents, totalPages };
+    }, [sortedStudents, currentPage, studentsPerPage]);
 
     return (
         <div style={{
@@ -524,69 +576,9 @@ export default function Welcome() {
                     gap: '2rem',
                     marginBottom: '2rem'
                 }}>
-                    <div style={{
-                        backgroundColor: 'white',
-                        padding: '1rem',
-                        borderRadius: '10px',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                    }}>
-                        <h3 style={{ marginBottom: '1rem', textAlign: 'center' }}>Age Distribution</h3>
-                        {chartData.ageDistribution && (
-                            <Pie
-                                data={chartData.ageDistribution}
-                                options={{
-                                    responsive: true,
-                                    plugins: {
-                                        legend: {
-                                            position: 'bottom'
-                                        }
-                                    }
-                                }}
-                            />
-                        )}
-                    </div>
-                    <div style={{
-                        backgroundColor: 'white',
-                        padding: '1rem',
-                        borderRadius: '10px',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                    }}>
-                        <h3 style={{ marginBottom: '1rem', textAlign: 'center' }}>Grade Distribution</h3>
-                        {chartData.gradeDistribution && (
-                            <Bar
-                                data={chartData.gradeDistribution}
-                                options={{
-                                    responsive: true,
-                                    plugins: {
-                                        legend: {
-                                            display: false
-                                        }
-                                    }
-                                }}
-                            />
-                        )}
-                    </div>
-                    <div style={{
-                        backgroundColor: 'white',
-                        padding: '1rem',
-                        borderRadius: '10px',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                    }}>
-                        <h3 style={{ marginBottom: '1rem', textAlign: 'center' }}>Subject Distribution</h3>
-                        {chartData.subjectDistribution && (
-                            <Pie
-                                data={chartData.subjectDistribution}
-                                options={{
-                                    responsive: true,
-                                    plugins: {
-                                        legend: {
-                                            position: 'bottom'
-                                        }
-                                    }
-                                }}
-                            />
-                        )}
-                    </div>
+                    <MemoizedPieChart data={chartData.ageDistribution} title="Age Distribution" />
+                    <MemoizedBarChart data={chartData.gradeDistribution} title="Grade Distribution" />
+                    <MemoizedPieChart data={chartData.subjectDistribution} title="Subject Distribution" />
                 </div>
 
                 <div style={{
@@ -810,7 +802,7 @@ export default function Welcome() {
                             </tr>
                         </thead>
                         <tbody>
-                            {currentStudents.map(student => (
+                            {paginationData.currentStudents.map(student => (
                                 <tr key={student.id} style={{
                                     borderBottom: '1px solid #ddd'
                                 }}>
@@ -834,9 +826,9 @@ export default function Welcome() {
                                     </td>
                                     <td style={{ 
                                         padding: '1rem',
-                                        backgroundColor: student.age === minAge ? '#e8f5e9' : 
-                                                       student.age === maxAge ? '#ffebee' : 
-                                                       student.age === avgAge ? '#fff3e0' : 'transparent'
+                                        backgroundColor: student.age === statistics.minAge ? '#e8f5e9' : 
+                                                       student.age === statistics.maxAge ? '#ffebee' : 
+                                                       student.age === statistics.avgAge ? '#fff3e0' : 'transparent'
                                     }}>
                                         {editingStudent?.id === student.id ? (
                                             <div>
@@ -861,9 +853,9 @@ export default function Welcome() {
                                         ) : (
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                 {student.age}
-                                                {student.age === minAge && <span style={{ color: '#2e7d32' }}>(Youngest)</span>}
-                                                {student.age === maxAge && <span style={{ color: '#c62828' }}>(Oldest)</span>}
-                                                {student.age === avgAge && <span style={{ color: '#ef6c00' }}>(Average)</span>}
+                                                {student.age === statistics.minAge && <span style={{ color: '#2e7d32' }}>(Youngest)</span>}
+                                                {student.age === statistics.maxAge && <span style={{ color: '#c62828' }}>(Oldest)</span>}
+                                                {student.age === statistics.avgAge && <span style={{ color: '#ef6c00' }}>(Average)</span>}
                                             </div>
                                         )}
                                     </td>
@@ -1022,18 +1014,18 @@ export default function Welcome() {
                         backgroundColor: '#f8f9fa',
                         borderRadius: '3px'
                     }}>
-                        Page {currentPage} of {totalPages}
+                        Page {currentPage} of {paginationData.totalPages}
                     </span>
                     <button
-                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                        disabled={currentPage === totalPages}
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, paginationData.totalPages))}
+                        disabled={currentPage === paginationData.totalPages}
                         style={{
                             padding: '0.5rem 1rem',
-                            backgroundColor: currentPage === totalPages ? '#ccc' : '#212121',
+                            backgroundColor: currentPage === paginationData.totalPages ? '#ccc' : '#212121',
                             color: 'white',
                             border: 'none',
                             borderRadius: '3px',
-                            cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'
+                            cursor: currentPage === paginationData.totalPages ? 'not-allowed' : 'pointer'
                         }}
                     >
                         Next
