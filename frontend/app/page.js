@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
     const [visible, setVisible] = useState(false);
+    const router = useRouter();
 
     useEffect(() => {
         setVisible(true);
@@ -73,6 +75,7 @@ export default function Home() {
                 transition: 'transform 0.3s ease, background-color 0.3s ease',
                 boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
             }}
+                    onClick={() => router.push('/login')}
                     onMouseEnter={e => e.target.style.transform = 'scale(1.1)'}
                     onMouseLeave={e => e.target.style.transform = 'scale(1)'}
             >Login</button>
