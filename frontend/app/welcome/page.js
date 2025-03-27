@@ -3,6 +3,54 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+export const filterStudents = (students, searchTerm, filterCriteria) => {
+    let filtered = [...students];
+
+    if (searchTerm) {
+        const term = searchTerm.toLowerCase();
+        filtered = filtered.filter(student =>
+            student.name.toLowerCase().includes(term) ||
+            student.age.toString().includes(term) ||
+            student.email.toLowerCase().includes(term) ||
+            student.grade.toLowerCase().includes(term) ||
+            student.subject.toLowerCase().includes(term)
+        );
+    }
+
+    if (filterCriteria.age) {
+        filtered = filtered.filter(student =>
+            student.age === parseInt(filterCriteria.age)
+        );
+    }
+
+    if (filterCriteria.grade) {
+        filtered = filtered.filter(student =>
+            student.grade === filterCriteria.grade
+        );
+    }
+
+    if (filterCriteria.subject) {
+        filtered = filtered.filter(student =>
+            student.subject === filterCriteria.subject
+        );
+    }
+
+    return filtered;
+};
+
+export const sortStudents = (students, sortField = 'name', sortDirection = 'asc') => {
+    return [...students].sort((a, b) => {
+        if (sortField === 'grade') {
+            const gradeA = parseInt(a[sortField]);
+            const gradeB = parseInt(b[sortField]);
+            return sortDirection === 'asc' ? gradeA - gradeB : gradeB - gradeA;
+        }
+        return sortDirection === 'asc'
+            ? (a[sortField] > b[sortField] ? 1 : -1)
+            : (a[sortField] < b[sortField] ? 1 : -1);
+    });
+};
+
 export default function Welcome() {
     const [visible, setVisible] = useState(false);
     const [students, setStudents] = useState([]);
@@ -19,6 +67,8 @@ export default function Welcome() {
         grade: '',
         subject: ''
     });
+    const [selectedStudent, setSelectedStudent] = useState(null);
+    const [showInfoModal, setShowInfoModal] = useState(false);
     const router = useRouter();
 
     const subjects = [
@@ -36,7 +86,8 @@ export default function Welcome() {
                 age: 15,
                 email: 'john.doe@example.com',
                 grade: '9th',
-                subject: 'Mathematics'
+                subject: 'Mathematics',
+                photo: 'https://example.com/default-photo.png'
             },
             {
                 id: 2,
@@ -44,7 +95,8 @@ export default function Welcome() {
                 age: 14,
                 email: 'jane.smith@example.com',
                 grade: '8th',
-                subject: 'Science'
+                subject: 'Science',
+                photo: 'https://i.pravatar.cc/150?img=2'
             },
             {
                 id: 3,
@@ -52,7 +104,8 @@ export default function Welcome() {
                 age: 16,
                 email: 'mike.johnson@example.com',
                 grade: '10th',
-                subject: 'English'
+                subject: 'English',
+                photo: 'https://i.pravatar.cc/150?img=3'
             },
         ];
         setStudents(initialStudents);
@@ -88,60 +141,12 @@ export default function Welcome() {
     };
 
     useEffect(() => {
-        filterStudents();
-    }, [searchTerm, filterCriteria, students]);
-
-    const filterStudents = () => {
-        let filtered = [...students];
-
-        if (searchTerm) {
-            const term = searchTerm.toLowerCase();
-            filtered = filtered.filter(student =>
-                student.name.toLowerCase().includes(term) ||
-                student.age.toString().includes(term) ||
-                student.email.toLowerCase().includes(term) ||
-                student.grade.toLowerCase().includes(term) ||
-                student.subject.toLowerCase().includes(term)
-            );
-        }
-
-        if (filterCriteria.age) {
-            filtered = filtered.filter(student =>
-                student.age === parseInt(filterCriteria.age)
-            );
-        }
-
-        if (filterCriteria.grade) {
-            filtered = filtered.filter(student =>
-                student.grade === filterCriteria.grade
-            );
-        }
-
-        if (filterCriteria.subject) {
-            filtered = filtered.filter(student =>
-                student.subject === filterCriteria.subject
-            );
-        }
-
+        const filtered = filterStudents(students, searchTerm, filterCriteria);
         setFilteredStudents(filtered);
-    };
-
-    const sortStudents = (students) => {
-        return [...students].sort((a, b) => {
-            if (sortField === 'grade') {
-                const gradeA = parseInt(a[sortField]);
-                const gradeB = parseInt(b[sortField]);
-                return sortDirection === 'asc' ? gradeA - gradeB : gradeB - gradeA;
-            }
-            return sortDirection === 'asc'
-                ? (a[sortField] > b[sortField] ? 1 : -1)
-                : (a[sortField] < b[sortField] ? 1 : -1);
-        });
-    };
+    }, [searchTerm, filterCriteria, students]);
 
     const handleSearch = (e) => {
         setSearchTerm(e.target.value);
-        filterStudents();
     };
 
     const handleFilterChange = (field, value) => {
@@ -150,7 +155,6 @@ export default function Welcome() {
             [field]: value
         }));
         setShowFilterOptions(false);
-        filterStudents();
     };
 
     const clearFilters = () => {
@@ -159,7 +163,6 @@ export default function Welcome() {
             grade: '',
             subject: ''
         });
-        filterStudents();
     };
 
     const handleSort = (field) => {
@@ -185,7 +188,8 @@ export default function Welcome() {
             age: '',
             email: '',
             grade: '5th',
-            subject: ''
+            subject: '',
+            photo: `https://example.com/default-photo.png`
         };
         setStudents([...students, newStudent]);
         setFilteredStudents([...filteredStudents, newStudent]);
@@ -218,7 +222,12 @@ export default function Welcome() {
         }
     };
 
-    const sortedStudents = sortStudents(filteredStudents);
+    const handleInfo = (student) => {
+        setSelectedStudent(student);
+        setShowInfoModal(true);
+    };
+
+    const sortedStudents = sortStudents(filteredStudents, sortField, sortDirection);
 
     return (
         <div style={{
@@ -594,20 +603,36 @@ export default function Welcome() {
                                                 Save
                                             </button>
                                         ) : (
-                                            <button
-                                                onClick={() => handleEdit(student)}
-                                                style={{
-                                                    padding: '0.5rem 1rem',
-                                                    backgroundColor: '#2196F3',
-                                                    color: 'white',
-                                                    border: 'none',
-                                                    borderRadius: '3px',
-                                                    cursor: 'pointer',
-                                                    marginRight: '0.5rem'
-                                                }}
-                                            >
-                                                Edit
-                                            </button>
+                                            <>
+                                                <button
+                                                    onClick={() => handleInfo(student)}
+                                                    style={{
+                                                        padding: '0.5rem 1rem',
+                                                        backgroundColor: '#FF9800',
+                                                        color: 'white',
+                                                        border: 'none',
+                                                        borderRadius: '3px',
+                                                        cursor: 'pointer',
+                                                        marginRight: '0.5rem'
+                                                    }}
+                                                >
+                                                    Info
+                                                </button>
+                                                <button
+                                                    onClick={() => handleEdit(student)}
+                                                    style={{
+                                                        padding: '0.5rem 1rem',
+                                                        backgroundColor: '#2196F3',
+                                                        color: 'white',
+                                                        border: 'none',
+                                                        borderRadius: '3px',
+                                                        cursor: 'pointer',
+                                                        marginRight: '0.5rem'
+                                                    }}
+                                                >
+                                                    Edit
+                                                </button>
+                                            </>
                                         )}
                                         <button
                                             onClick={() => handleDelete(student.id)}
@@ -629,6 +654,119 @@ export default function Welcome() {
                     </table>
                 </div>
             </div>
+
+            {/* Info Modal */}
+            {showInfoModal && selectedStudent && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        backgroundColor: 'white',
+                        padding: '2rem',
+                        borderRadius: '15px',
+                        width: '90%',
+                        maxWidth: '500px',
+                        position: 'relative',
+                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                    }}>
+                        <button
+                            onClick={() => setShowInfoModal(false)}
+                            style={{
+                                position: 'absolute',
+                                top: '1rem',
+                                right: '1rem',
+                                background: 'none',
+                                border: 'none',
+                                fontSize: '1.5rem',
+                                cursor: 'pointer',
+                                color: '#666'
+                            }}
+                        >
+                            ×
+                        </button>
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            marginBottom: '2rem'
+                        }}>
+                            <img
+                                src={selectedStudent.photo}
+                                alt={selectedStudent.name}
+                                style={{
+                                    width: '150px',
+                                    height: '150px',
+                                    borderRadius: '50%',
+                                    objectFit: 'cover',
+                                    marginBottom: '1rem',
+                                    border: '3px solid #FFC107',
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                }}
+                            />
+                            <h2 style={{
+                                fontSize: '1.8rem',
+                                color: '#212121',
+                                textAlign: 'center',
+                                margin: '0'
+                            }}>{selectedStudent.name}</h2>
+                        </div>
+                        <div style={{
+                            display: 'grid',
+                            gap: '1rem'
+                        }}>
+                            <div style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                padding: '0.5rem',
+                                backgroundColor: '#f8f9fa',
+                                borderRadius: '5px'
+                            }}>
+                                <span style={{ fontWeight: '600' }}>Age:</span>
+                                <span>{selectedStudent.age}</span>
+                            </div>
+                            <div style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                padding: '0.5rem',
+                                backgroundColor: '#f8f9fa',
+                                borderRadius: '5px'
+                            }}>
+                                <span style={{ fontWeight: '600' }}>Email:</span>
+                                <span>{selectedStudent.email}</span>
+                            </div>
+                            <div style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                padding: '0.5rem',
+                                backgroundColor: '#f8f9fa',
+                                borderRadius: '5px'
+                            }}>
+                                <span style={{ fontWeight: '600' }}>Grade:</span>
+                                <span>{selectedStudent.grade}</span>
+                            </div>
+                            <div style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                padding: '0.5rem',
+                                backgroundColor: '#f8f9fa',
+                                borderRadius: '5px'
+                            }}>
+                                <span style={{ fontWeight: '600' }}>Subject:</span>
+                                <span>{selectedStudent.subject}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
