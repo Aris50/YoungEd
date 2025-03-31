@@ -133,6 +133,7 @@ export default function Welcome() {
     const [sortDirection, setSortDirection] = useState('asc');
     const [showSortOptions, setShowSortOptions] = useState(false);
     const [showFilterOptions, setShowFilterOptions] = useState(false);
+
     const [filterCriteria, setFilterCriteria] = useState({
         age: '',
         grade: '',
@@ -458,6 +459,7 @@ export default function Welcome() {
     const filteredStudents = useMemo(() => {
         return filterStudents(students, searchTerm, filterCriteria);
     }, [students, searchTerm, filterCriteria]);
+
 
     const sortedStudents = useMemo(() => {
         return sortStudents(filteredStudents, sortField, sortDirection);
@@ -847,16 +849,18 @@ export default function Welcome() {
                                                         borderRadius: '3px',
                                                         border: errors.age ? '1px solid #f44336' : '1px solid #ddd'
                                                     }}
-                                                />
+                                                />a
                                                 {errors.age && <div style={{ color: '#f44336', fontSize: '0.8rem' }}>{errors.age}</div>}
                                             </div>
                                         ) : (
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                 {student.age}
-                                                {student.age === statistics.minAge && <span style={{ color: '#2e7d32' }}>(Youngest)</span>}
-                                                {student.age === statistics.maxAge && <span style={{ color: '#c62828' }}>(Oldest)</span>}
-                                                {student.age === statistics.avgAge && <span style={{ color: '#ef6c00' }}>(Average)</span>}
+                                                {student.age >=11 && student.age <=13 && <span style={{ color: '#2e7d32' }}>(Young)</span>}
+                                                {student.age >=14 && student.age<=15 && <span style={{ color: '#ef6c00' }}>(Average)</span>}
+                                                {student.age >=16 && <span style={{ color: '#c62828' }}>(Old)</span>}
                                             </div>
+
+
                                         )}
                                     </td>
                                     <td style={{ padding: '1rem' }}>
