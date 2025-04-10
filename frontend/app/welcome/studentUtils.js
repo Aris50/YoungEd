@@ -91,3 +91,33 @@ export function validateStudent(formData) {
 
     return errors;
 }
+
+export function categorizeStudentsByAge(students) {
+    if (!students.length) return students;
+
+    // Sort students by age
+    const sortedStudents = [...students].sort((a, b) => a.age - b.age);
+    
+    // Calculate the size of each category
+    const totalStudents = sortedStudents.length;
+    const categorySize = Math.floor(totalStudents / 3);
+    const remainder = totalStudents % 3;
+
+    // Assign categories
+    return sortedStudents.map((student, index) => {
+        let ageCategory;
+        
+        if (index < categorySize + (remainder > 0 ? 1 : 0)) {
+            ageCategory = 'Youngest 33%';
+        } else if (index < 2 * categorySize + (remainder > 1 ? 1 : 0)) {
+            ageCategory = 'Average 33%';
+        } else {
+            ageCategory = 'Oldest 33%';
+        }
+
+        return {
+            ...student,
+            ageCategory
+        };
+    });
+}

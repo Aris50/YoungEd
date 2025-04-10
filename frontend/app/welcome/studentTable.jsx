@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import StudentForm from './StudentForm';
-import {addStudent, removeStudent, editStudent, filterStudents, sortStudents, validateStudent} from './studentUtils';
+import {addStudent, removeStudent, editStudent, filterStudents, sortStudents, validateStudent, categorizeStudentsByAge} from './studentUtils';
 
 export default function StudentTable({ students }) {
     const [studentList, setStudentList] = useState(students);
@@ -67,9 +67,13 @@ export default function StudentTable({ students }) {
         setFilterCriteria({ name: '', age: '', grade: '', gender: '' });
     }
 
+    const categorizedList = useMemo(() => {
+        return categorizeStudentsByAge(studentList);
+    }, [studentList]);
+
     const filteredList = useMemo(() => {
-        return filterStudents(studentList, filterCriteria);
-    }, [studentList, filterCriteria]);
+        return filterStudents(categorizedList, filterCriteria);
+    }, [categorizedList, filterCriteria]);
 
     function handleSort(field) {
         if (sortField === field) {
@@ -255,6 +259,9 @@ export default function StudentTable({ students }) {
                             >
                                 Grade {sortField === 'grade' ? (sortDirection === 'asc' ? '↑' : '↓') : ''}
                             </th>
+                            <th style={{ padding: '0.75rem', textAlign: 'left' }}>
+                                Age Category
+                            </th>
                             <th style={{ padding: '0.75rem', textAlign: 'left' }}>Actions</th>
                         </tr>
                     </thead>
@@ -273,6 +280,14 @@ export default function StudentTable({ students }) {
                                 <td data-testid={`student-age-${student.id}`} style={{ padding: '0.75rem' }}>{student.age}</td>
                                 <td data-testid={`student-gender-${student.id}`} style={{ padding: '0.75rem' }}>{student.gender}</td>
                                 <td data-testid={`student-grade-${student.id}`} style={{ padding: '0.75rem' }}>{student.grade}</td>
+                                <td style={{ 
+                                    padding: '0.75rem',
+                                    color: student.ageCategory === 'Youngest 33%' ? '#28a745' : 
+                                           student.ageCategory === 'Oldest 33%' ? '#dc3545' : '#ffc107',
+                                    fontWeight: '600'
+                                }}>
+                                    {student.ageCategory}
+                                </td>
                                 <td style={{ padding: '0.75rem' }}>
                                     <button 
                                         onClick={() => handleRemoveStudent(student.id)}

@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import StudentTable from './studentTable';
+import mockStudents from './mockStudents';
 
 const sampleStudents = [
     { id: '1', name: 'Alice', age: 14, gender: 'Female', grade: '8th' },
@@ -35,7 +36,7 @@ export default function Page() {
                     textAlign: 'center',
                     color: '#212121'
                 }}>Student Management</h1>
-                <StudentTable students={sampleStudents} />
+                <StudentTable students={mockStudents} />
             </div>
         </div>
     );
