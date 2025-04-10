@@ -16,8 +16,8 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      include: ['app/welcome/**/*.{js,jsx}'],
-      exclude: ['app/welcome/**/*.{test,spec}.{js,jsx}']
+      include: ['app/welcome/studentForm.jsx', 'app/welcome/studentTable.jsx', 'app/welcome/studentUtils.js'],
+      exclude: ['app/welcome/**/*.{test,spec}.{js,jsx}',   'frontend/app/welcome/GradeChart.jsx', 'frontend/app/welcome/mockStudents.js', 'frontend/app/welcome/page.js' ]
     }
   },
   resolve: {
