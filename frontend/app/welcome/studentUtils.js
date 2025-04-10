@@ -100,18 +100,23 @@ export function categorizeStudentsByAge(students) {
     
     // Calculate the size of each category
     const totalStudents = sortedStudents.length;
-    const categorySize = Math.floor(totalStudents / 3);
+    const baseCategorySize = Math.floor(totalStudents / 3);
     const remainder = totalStudents % 3;
 
     // Assign categories
     return sortedStudents.map((student, index) => {
         let ageCategory;
         
-        if (index < categorySize + (remainder > 0 ? 1 : 0)) {
+        // First category gets one extra if remainder is 1 or 2
+        if (index < baseCategorySize + (remainder > 0 ? 1 : 0)) {
             ageCategory = 'Youngest 33%';
-        } else if (index < 2 * categorySize + (remainder > 1 ? 1 : 0)) {
+        } 
+        // Second category gets one extra if remainder is 2
+        else if (index < 2 * baseCategorySize + (remainder > 1 ? 1 : 0)) {
             ageCategory = 'Average 33%';
-        } else {
+        } 
+        // Last category gets the base size
+        else {
             ageCategory = 'Oldest 33%';
         }
 

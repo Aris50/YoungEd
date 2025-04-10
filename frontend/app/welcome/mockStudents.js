@@ -14,7 +14,6 @@ const mockStudents = [
     { id: '13', name: 'Mike', age: 15, gender: 'Male', grade: '9th' },
     { id: '14', name: 'Nina', age: 16, gender: 'Female', grade: '10th' },
     { id: '15', name: 'Owen', age: 12, gender: 'Male', grade: '6th' },
-    { id: '16', name: 'Paula', age: 13, gender: 'Female', grade: '7th' },
     { id: '17', name: 'Quinn', age: 14, gender: 'Other', grade: '8th' },
     { id: '18', name: 'Rachel', age: 18, gender: 'Female', grade: '12th' },
     { id: '19', name: 'Sam', age: 11, gender: 'Male', grade: '5th' },
