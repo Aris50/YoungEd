@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import StudentForm from './StudentForm';
-import { addStudent, removeStudent, editStudent, filterStudents } from './studentUtils';
+import { addStudent, removeStudent, editStudent, filterStudents, sortStudents} from './studentUtils';
 
 export default function StudentTable({ students }) {
     const [studentList, setStudentList] = useState(students);
@@ -13,6 +13,8 @@ export default function StudentTable({ students }) {
         grade: '',
         gender: ''
     });
+    const [sortField, setSortField] = useState('name');
+    const [sortDirection, setSortDirection] = useState('asc');
 
     function handleSaveStudent() {
         if (editingStudent) {
@@ -55,6 +57,16 @@ export default function StudentTable({ students }) {
     const filteredList = useMemo(() => {
         return filterStudents(studentList, filterCriteria);
     }, [studentList, filterCriteria]);
+
+    function handleSort(field) {
+        if (sortField === field) {
+            // Toggle direction
+            setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
+        } else {
+            setSortField(field);
+            setSortDirection('asc');
+        }
+    }
 
     return (
         <div>
@@ -120,20 +132,19 @@ export default function StudentTable({ students }) {
                 <table>
                     <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Age</th>
-                        <th>Gender</th>
-                        <th>Grade</th>
-                        <th>Actions</th>
+                        <th onClick={() => handleSort('name')}>Name {sortField === 'name' ? (sortDirection === 'asc' ? '↑' : '↓') : ''}</th>
+                        <th onClick={() => handleSort('age')}>Age {sortField === 'age' ? (sortDirection === 'asc' ? '↑' : '↓') : ''}</th>
+                        <th onClick={() => handleSort('gender')}>Gender {sortField === 'gender' ? (sortDirection === 'asc' ? '↑' : '↓') : ''}</th>
+                        <th onClick={() => handleSort('grade')}>Grade {sortField === 'grade' ? (sortDirection === 'asc' ? '↑' : '↓') : ''}</th>
                     </tr>
                     </thead>
                     <tbody>
-                    {filteredList.map((student) => (
+                    {sortStudents(filteredList, sortField, sortDirection).map((student) => (
                         <tr key={student.id}>
-                            <td data-testid={`student-grade-${student.id}`}>{student.grade}</td>
                             <td data-testid={`student-name-${student.id}`}>{student.name}</td>
                             <td data-testid={`student-age-${student.id}`}>{student.age}</td>
                             <td data-testid={`student-gender-${student.id}`}>{student.gender}</td>
+                            <td data-testid={`student-grade-${student.id}`}>{student.grade}</td>
                             <td>
                                 <button onClick={() => handleRemoveStudent(student.id)}>Remove</button>
                                 <button onClick={() => handleEditStudent(student)}>Edit</button>

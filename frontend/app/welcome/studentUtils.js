@@ -46,3 +46,25 @@ export function filterStudents(currentList, criteria) {
         return matchesName && matchesGrade && matchesGender && matchesAge;
     });
 }
+
+export function sortStudents(students, sortField = 'name', sortDirection = 'asc') {
+    return [...students].sort((a, b) => {
+        const aVal = a[sortField];
+        const bVal = b[sortField];
+
+        // If it's a number comparison
+        if (typeof aVal === 'number' && typeof bVal === 'number') {
+            return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
+        }
+
+        // For strings, use localeCompare
+        if (typeof aVal === 'string' && typeof bVal === 'string') {
+            return sortDirection === 'asc'
+                ? aVal.localeCompare(bVal)
+                : bVal.localeCompare(aVal);
+        }
+
+        // Default to equal if unknown type
+        return 0;
+    });
+}
