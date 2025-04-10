@@ -9,9 +9,34 @@ const sampleStudents = [
 
 export default function Page() {
     return (
-        <div style={{ padding: '2rem' }}>
-            <h1>Student Management</h1>
-            <StudentTable students={sampleStudents} />
+        <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            minHeight: '100vh',
+            flexDirection: 'column',
+            backgroundColor: '#FFC107',
+            color: '#212121',
+            fontFamily: 'Poppins, sans-serif',
+            padding: '20px'
+        }}>
+            <div style={{
+                backgroundColor: 'white',
+                padding: '2rem',
+                borderRadius: '10px',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                width: '100%',
+                maxWidth: '800px'
+            }}>
+                <h1 style={{
+                    fontSize: '2rem',
+                    fontWeight: '700',
+                    marginBottom: '1.5rem',
+                    textAlign: 'center',
+                    color: '#212121'
+                }}>Student Management</h1>
+                <StudentTable students={sampleStudents} />
+            </div>
         </div>
     );
 }

@@ -23,7 +23,7 @@ export default function StudentTable({ students }) {
 
         if (Object.keys(validationErrors).length > 0) {
             const errorMessage = Object.values(validationErrors).join('\n');
-            window.alert('Please fix the following errors:\n\n' + errorMessage);
+            window.confirm('Please fix the following errors:\n\n' + errorMessage);
             return; // Don't proceed
         }
 
@@ -83,7 +83,22 @@ export default function StudentTable({ students }) {
 
     return (
         <div>
-            <button onClick={() => setIsAdding(true)}>Add</button>
+            <button 
+                onClick={() => setIsAdding(true)}
+                style={{
+                    padding: '0.75rem',
+                    backgroundColor: '#212121',
+                    color: '#FFC107',
+                    border: 'none',
+                    borderRadius: '5px',
+                    fontSize: '1rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    marginBottom: '1rem'
+                }}
+            >
+                Add Student
+            </button>
             <div style={{ marginBottom: '1rem' }}>
                 <input
                     type="text"
@@ -92,6 +107,14 @@ export default function StudentTable({ students }) {
                     onChange={(e) =>
                         setFilterCriteria({ ...filterCriteria, name: e.target.value })
                     }
+                    style={{
+                        width: '100%',
+                        padding: '0.75rem',
+                        borderRadius: '5px',
+                        border: '1px solid #ddd',
+                        fontSize: '1rem',
+                        marginBottom: '0.5rem'
+                    }}
                 />
                 <input
                     type="number"
@@ -100,12 +123,28 @@ export default function StudentTable({ students }) {
                     onChange={(e) =>
                         setFilterCriteria({ ...filterCriteria, age: e.target.value })
                     }
+                    style={{
+                        width: '100%',
+                        padding: '0.75rem',
+                        borderRadius: '5px',
+                        border: '1px solid #ddd',
+                        fontSize: '1rem',
+                        marginBottom: '0.5rem'
+                    }}
                 />
                 <select
                     value={filterCriteria.grade}
                     onChange={(e) =>
                         setFilterCriteria({ ...filterCriteria, grade: e.target.value })
                     }
+                    style={{
+                        width: '100%',
+                        padding: '0.75rem',
+                        borderRadius: '5px',
+                        border: '1px solid #ddd',
+                        fontSize: '1rem',
+                        marginBottom: '0.5rem'
+                    }}
                 >
                     <option value="">All Grades</option>
                     {['5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'].map((g) => (
@@ -119,6 +158,14 @@ export default function StudentTable({ students }) {
                     onChange={(e) =>
                         setFilterCriteria({ ...filterCriteria, gender: e.target.value })
                     }
+                    style={{
+                        width: '100%',
+                        padding: '0.75rem',
+                        borderRadius: '5px',
+                        border: '1px solid #ddd',
+                        fontSize: '1rem',
+                        marginBottom: '0.5rem'
+                    }}
                 >
                     <option value="">All Genders</option>
                     {['Male', 'Female', 'Other'].map((g) => (
@@ -127,8 +174,23 @@ export default function StudentTable({ students }) {
                         </option>
                     ))}
                 </select>
-
-                <button onClick={clearFilters}>Clear</button>
+                <button 
+                    onClick={clearFilters}
+                    style={{
+                        width: '100%',
+                        padding: '0.75rem',
+                        backgroundColor: '#FFC107',
+                        color: '#212121',
+                        border: 'none',
+                        borderRadius: '5px',
+                        fontSize: '1rem',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        marginBottom: '1rem'
+                    }}
+                >
+                    Clear Filters
+                </button>
             </div>
 
             {(isAdding || editingStudent) && (
@@ -141,30 +203,109 @@ export default function StudentTable({ students }) {
                 />
             )}
             {filteredList.length === 0 ? (
-                <p>No students found.</p>
+                <p style={{ textAlign: 'center', color: '#666' }}>No students found.</p>
             ) : (
-                <table>
+                <table style={{
+                    width: '100%',
+                    borderCollapse: 'collapse',
+                    marginTop: '1rem'
+                }}>
                     <thead>
-                    <tr>
-                        <th onClick={() => handleSort('name')}>Name {sortField === 'name' ? (sortDirection === 'asc' ? '↑' : '↓') : ''}</th>
-                        <th onClick={() => handleSort('age')}>Age {sortField === 'age' ? (sortDirection === 'asc' ? '↑' : '↓') : ''}</th>
-                        <th onClick={() => handleSort('gender')}>Gender {sortField === 'gender' ? (sortDirection === 'asc' ? '↑' : '↓') : ''}</th>
-                        <th onClick={() => handleSort('grade')}>Grade {sortField === 'grade' ? (sortDirection === 'asc' ? '↑' : '↓') : ''}</th>
-                    </tr>
+                        <tr style={{
+                            backgroundColor: '#212121',
+                            color: '#FFC107'
+                        }}>
+                            <th 
+                                onClick={() => handleSort('name')}
+                                style={{
+                                    padding: '0.75rem',
+                                    textAlign: 'left',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Name {sortField === 'name' ? (sortDirection === 'asc' ? '↑' : '↓') : ''}
+                            </th>
+                            <th 
+                                onClick={() => handleSort('age')}
+                                style={{
+                                    padding: '0.75rem',
+                                    textAlign: 'left',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Age {sortField === 'age' ? (sortDirection === 'asc' ? '↑' : '↓') : ''}
+                            </th>
+                            <th 
+                                onClick={() => handleSort('gender')}
+                                style={{
+                                    padding: '0.75rem',
+                                    textAlign: 'left',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Gender {sortField === 'gender' ? (sortDirection === 'asc' ? '↑' : '↓') : ''}
+                            </th>
+                            <th 
+                                onClick={() => handleSort('grade')}
+                                style={{
+                                    padding: '0.75rem',
+                                    textAlign: 'left',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Grade {sortField === 'grade' ? (sortDirection === 'asc' ? '↑' : '↓') : ''}
+                            </th>
+                            <th style={{ padding: '0.75rem', textAlign: 'left' }}>Actions</th>
+                        </tr>
                     </thead>
                     <tbody>
-                    {sortStudents(filteredList, sortField, sortDirection).map((student) => (
-                        <tr key={student.id}>
-                            <td data-testid={`student-name-${student.id}`}>{student.name}</td>
-                            <td data-testid={`student-age-${student.id}`}>{student.age}</td>
-                            <td data-testid={`student-gender-${student.id}`}>{student.gender}</td>
-                            <td data-testid={`student-grade-${student.id}`}>{student.grade}</td>
-                            <td>
-                                <button onClick={() => handleRemoveStudent(student.id)}>Remove</button>
-                                <button onClick={() => handleEditStudent(student)}>Edit</button>
-                            </td>
-                        </tr>
-                    ))}
+                        {sortStudents(filteredList, sortField, sortDirection).map((student) => (
+                            <tr 
+                                key={student.id}
+                                style={{
+                                    borderBottom: '1px solid #ddd',
+                                    '&:hover': {
+                                        backgroundColor: '#f5f5f5'
+                                    }
+                                }}
+                            >
+                                <td data-testid={`student-name-${student.id}`} style={{ padding: '0.75rem' }}>{student.name}</td>
+                                <td data-testid={`student-age-${student.id}`} style={{ padding: '0.75rem' }}>{student.age}</td>
+                                <td data-testid={`student-gender-${student.id}`} style={{ padding: '0.75rem' }}>{student.gender}</td>
+                                <td data-testid={`student-grade-${student.id}`} style={{ padding: '0.75rem' }}>{student.grade}</td>
+                                <td style={{ padding: '0.75rem' }}>
+                                    <button 
+                                        onClick={() => handleRemoveStudent(student.id)}
+                                        data-testid={`remove-student-${student.id}`}
+                                        style={{
+                                            padding: '0.5rem',
+                                            backgroundColor: '#dc3545',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '5px',
+                                            marginRight: '0.5rem',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        Remove
+                                    </button>
+                                    <button 
+                                        onClick={() => handleEditStudent(student)}
+                                        data-testid={`edit-student-${student.id}`}
+                                        style={{
+                                            padding: '0.5rem',
+                                            backgroundColor: '#212121',
+                                            color: '#FFC107',
+                                            border: 'none',
+                                            borderRadius: '5px',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        Edit
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
                     </tbody>
                 </table>
             )}
