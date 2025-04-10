@@ -68,3 +68,26 @@ export function sortStudents(students, sortField = 'name', sortDirection = 'asc'
         return 0;
     });
 }
+
+export function validateStudent(formData) {
+    const errors = {};
+
+    if (!formData.name || formData.name.trim().length < 2) {
+        errors.name = 'Name must be at least 2 characters long.';
+    }
+
+    const age = parseInt(formData.age, 10);
+    if (isNaN(age) || age < 5 || age > 18) {
+        errors.age = 'Age must be a number between 5 and 18.';
+    }
+
+    if (!formData.gender) {
+        errors.gender = 'Gender is required.';
+    }
+
+    if (!formData.grade) {
+        errors.grade = 'Grade is required.';
+    }
+
+    return errors;
+}

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import StudentForm from './StudentForm';
-import { addStudent, removeStudent, editStudent, filterStudents, sortStudents} from './studentUtils';
+import {addStudent, removeStudent, editStudent, filterStudents, sortStudents, validateStudent} from './studentUtils';
 
 export default function StudentTable({ students }) {
     const [studentList, setStudentList] = useState(students);
@@ -15,8 +15,18 @@ export default function StudentTable({ students }) {
     });
     const [sortField, setSortField] = useState('name');
     const [sortDirection, setSortDirection] = useState('asc');
+    const [errors, setErrors] = useState({});
 
     function handleSaveStudent() {
+        const validationErrors = validateStudent(formData);
+        setErrors(validationErrors);
+
+        if (Object.keys(validationErrors).length > 0) {
+            const errorMessage = Object.values(validationErrors).join('\n');
+            window.alert('Please fix the following errors:\n\n' + errorMessage);
+            return; // Don't proceed
+        }
+
         if (editingStudent) {
             const updatedList = editStudent(studentList, formData, editingStudent.id);
             setStudentList(updatedList);
@@ -27,6 +37,7 @@ export default function StudentTable({ students }) {
         setFormData({ name: '', age: '', gender: '', grade: '' });
         setIsAdding(false);
         setEditingStudent(null);
+        setErrors({});
     }
 
     function handleRemoveStudent(studentId) {
@@ -42,12 +53,14 @@ export default function StudentTable({ students }) {
             grade: student.grade
         });
         setEditingStudent(student);
+        setErrors({});
     }
 
     function handleCancel() {
         setFormData({ name: '', age: '', gender: '', grade: '' });
         setIsAdding(false);
         setEditingStudent(null);
+        setErrors({});
     }
 
     function clearFilters() {
@@ -124,6 +137,7 @@ export default function StudentTable({ students }) {
                     setFormData={setFormData}
                     onSave={handleSaveStudent}
                     onCancel={handleCancel}
+                    errors={errors}
                 />
             )}
             {filteredList.length === 0 ? (
