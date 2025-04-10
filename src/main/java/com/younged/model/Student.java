@@ -20,4 +20,15 @@ public class Student {
     private String gender;
 
     private String grade;
+
+    @Override
+    public String toString() {
+        return "Student{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", age=" + age +
+                ", gender='" + gender + '\'' +
+                ", grade='" + grade + '\'' +
+                '}';
+    }
 }

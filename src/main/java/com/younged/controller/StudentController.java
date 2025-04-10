@@ -18,7 +18,10 @@ public class StudentController {
 
     @PostMapping
     public Student create(@RequestBody Student student) {
-        return service.save(student);
+        System.out.println("➡️ Received POST request to create student: " + student);
+        Student savedStudent = service.save(student);
+        System.out.println("✅ Student saved: " + savedStudent);
+        return savedStudent;
     }
 
     @GetMapping
