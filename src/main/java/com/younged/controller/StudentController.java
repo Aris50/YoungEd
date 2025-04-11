@@ -25,8 +25,15 @@ public class StudentController {
     }
 
     @GetMapping
-    public List<Student> getAll() {
-        return service.getAll();
+    public List<Student> getAllFilteredAndSorted(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Integer age,
+            @RequestParam(required = false) String gender,
+            @RequestParam(required = false) String grade,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String direction
+    ) {
+        return service.getAllFilteredAndSorted(name, age, gender, grade, sortBy, direction);
     }
 
     @PatchMapping("/{id}")
