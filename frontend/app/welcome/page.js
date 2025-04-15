@@ -1,14 +1,43 @@
 'use client';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import StudentTable from './studentTable';
 import mockStudents from './mockStudents';
-
-const sampleStudents = [
-    { id: '1', name: 'Alice', age: 14, gender: 'Female', grade: '8th' },
-    { id: '2', name: 'Bob', age: 15, gender: 'Male', grade: '9th' }
-];
+import ConnectionStatus from './ConnectionStatus';
+import useOfflineData from './OfflineDataManager';
 
 export default function Page() {
+    const [students, setStudents] = useState(mockStudents);
+    const { 
+        data: offlineStudents, 
+        isOffline, 
+        pendingOperations,
+        addItem: addStudent,
+        updateItem: updateStudent,
+        deleteItem: deleteStudent,
+        syncData
+    } = useOfflineData(mockStudents);
+
+    // Actualizare studenți când se schimbă starea offline
+    useEffect(() => {
+        setStudents(offlineStudents);
+    }, [offlineStudents]);
+
+    // Funcții pentru gestionarea studenților
+    const handleAddStudent = async (student) => {
+        const newStudent = await addStudent(student);
+        return newStudent;
+    };
+
+    const handleUpdateStudent = async (id, updatedData) => {
+        const updatedStudent = await updateStudent(id, updatedData);
+        return updatedStudent;
+    };
+
+    const handleDeleteStudent = async (id) => {
+        const success = await deleteStudent(id);
+        return success;
+    };
+
     return (
         <div style={{
             display: 'flex',
@@ -21,6 +50,8 @@ export default function Page() {
             fontFamily: 'Poppins, sans-serif',
             padding: '20px'
         }}>
+            <ConnectionStatus />
+            
             <div style={{
                 backgroundColor: 'white',
                 padding: '2rem',
@@ -36,7 +67,42 @@ export default function Page() {
                     textAlign: 'center',
                     color: '#212121'
                 }}>Student Management</h1>
-                <StudentTable students={mockStudents} />
+                
+                {isOffline && (
+                    <div style={{
+                        backgroundColor: '#f8f9fa',
+                        padding: '10px',
+                        borderRadius: '5px',
+                        marginBottom: '20px',
+                        border: '1px solid #dee2e6',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                    }}>
+                        <div>
+                            <span style={{ fontWeight: 'bold' }}>Mod offline activ</span>
+                            <p style={{ margin: '5px 0 0 0', fontSize: '0.9rem' }}>
+                                Modificările vor fi sincronizate când conexiunea este restaurată.
+                            </p>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                            <div>Operațiuni în așteptare:</div>
+                            <div style={{ fontWeight: 'bold' }}>
+                                {pendingOperations.create.length + 
+                                 pendingOperations.update.length + 
+                                 pendingOperations.delete.length}
+                            </div>
+                        </div>
+                    </div>
+                )}
+                
+                <StudentTable 
+                    students={students} 
+                    onAddStudent={handleAddStudent}
+                    onUpdateStudent={handleUpdateStudent}
+                    onDeleteStudent={handleDeleteStudent}
+                    isOffline={isOffline}
+                />
             </div>
         </div>
     );

@@ -3,7 +3,13 @@ import StudentForm from './StudentForm';
 import GradeChart from './GradeChart';
 import {addStudent, removeStudent, editStudent, filterStudents, sortStudents, validateStudent, categorizeStudentsByAge} from './studentUtils';
 
-export default function StudentTable({ students }) {
+export default function StudentTable({ 
+    students, 
+    onAddStudent, 
+    onUpdateStudent, 
+    onDeleteStudent,
+    isOffline = false 
+}) {
     const [studentList, setStudentList] = useState(students);
     const [formData, setFormData] = useState({ name: '', age: '', gender: '', grade: '' });
     const [isAdding, setIsAdding] = useState(false);
@@ -24,7 +30,12 @@ export default function StudentTable({ students }) {
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(5);
 
-    function handleSaveStudent() {
+    // Actualizare lista de studenți când se schimbă props
+    React.useEffect(() => {
+        setStudentList(students);
+    }, [students]);
+
+    async function handleSaveStudent() {
         const validationErrors = validateStudent(formData);
         setErrors(validationErrors);
 
@@ -34,22 +45,44 @@ export default function StudentTable({ students }) {
             return; // Don't proceed
         }
 
-        if (editingStudent) {
-            const updatedList = editStudent(studentList, formData, editingStudent.id);
-            setStudentList(updatedList);
-        } else {
-            const updatedList = addStudent(studentList, formData);
-            setStudentList(updatedList);
+        try {
+            if (editingStudent) {
+                // Actualizare student
+                const updatedStudent = await onUpdateStudent(editingStudent.id, formData);
+                if (updatedStudent) {
+                    const updatedList = editStudent(studentList, updatedStudent, editingStudent.id);
+                    setStudentList(updatedList);
+                }
+            } else {
+                // Adăugare student nou
+                const newStudent = await onAddStudent(formData);
+                if (newStudent) {
+                    const updatedList = addStudent(studentList, newStudent);
+                    setStudentList(updatedList);
+                }
+            }
+            
+            setFormData({ name: '', age: '', gender: '', grade: '' });
+            setIsAdding(false);
+            setEditingStudent(null);
+            setErrors({});
+        } catch (error) {
+            console.error('Eroare la salvarea studentului:', error);
+            window.confirm('A apărut o eroare la salvarea studentului. Vă rugăm să încercați din nou.');
         }
-        setFormData({ name: '', age: '', gender: '', grade: '' });
-        setIsAdding(false);
-        setEditingStudent(null);
-        setErrors({});
     }
 
-    function handleRemoveStudent(studentId) {
-        const updatedList = removeStudent(studentList, studentId);
-        setStudentList(updatedList);
+    async function handleRemoveStudent(studentId) {
+        try {
+            const success = await onDeleteStudent(studentId);
+            if (success) {
+                const updatedList = removeStudent(studentList, studentId);
+                setStudentList(updatedList);
+            }
+        } catch (error) {
+            console.error('Eroare la ștergerea studentului:', error);
+            window.confirm('A apărut o eroare la ștergerea studentului. Vă rugăm să încercați din nou.');
+        }
     }
 
     function handleEditStudent(student) {
